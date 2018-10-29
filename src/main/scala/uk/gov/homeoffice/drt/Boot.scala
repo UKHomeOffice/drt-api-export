@@ -21,7 +21,7 @@ object Boot extends App with Logging {
     case Some(ParsedArguments(Start)) =>
       info("starting something")
 
-    case Some(_) =>
+    case _ =>
       parser.showUsage()
 
   }

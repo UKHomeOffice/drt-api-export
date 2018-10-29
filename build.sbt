@@ -4,6 +4,7 @@ import Keys._
 val moduleName = "drt-api-export"
 val typesafeConfig = "1.3.0"
 val specs2 = "3.7.3"
+val jodaTime = "2.9.4"
 
 val root = Project(id = moduleName, base = file("."))
   .configs(IntegrationTest)
@@ -36,7 +37,10 @@ val root = Project(id = moduleName, base = file("."))
       "org.postgresql" % "postgresql" % "42.2.2",
       "commons-dbcp" % "commons-dbcp" % "1.4",
       "com.typesafe" % "config" % typesafeConfig,
-      "com.github.scopt" %% "scopt" % "3.7.0"
+      "com.github.scopt" %% "scopt" % "3.7.0",
+      "joda-time" % "joda-time" % jodaTime,
+      "commons-io" % "commons-io" % "2.6",
+      "io.spray" %% "spray-json" % "1.3.4"
     ),
     libraryDependencies ++= Seq(
       "joda-time" % "joda-time" % "2.9.4" % Test,
