@@ -8,11 +8,11 @@ import org.apache.commons.io.IOUtils
 import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
 
-trait ZipFilesInDirectory extends Logging {
+trait ZipFilesInDirectory extends Logging with HasConfig {
 
   val dqRegex: Regex = "drt_dq_([0-9]{2})([0-9]{2})([0-9]{2})_[0-9]{6}_[0-9]{4}\\.zip".r
 
-  val directory: String
+  val directory: String = config.getString("zipDirectory")
 
   def getFilesInDirectory: List[String] = {
     val d = new File(directory)
@@ -65,6 +65,10 @@ trait ZipFilesInDirectory extends Logging {
     import FlightPassengerInfoProtocol._
     import spray.json._
     Try(content.parseJson.convertTo[VoyageManifest])
+  }
+
+  def saveToDatabase(voyageManifest: VoyageManifest) = {
+
   }
 
 

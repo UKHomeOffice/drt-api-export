@@ -40,14 +40,17 @@ val root = Project(id = moduleName, base = file("."))
       "com.github.scopt" %% "scopt" % "3.7.0",
       "joda-time" % "joda-time" % jodaTime,
       "commons-io" % "commons-io" % "2.6",
-      "io.spray" %% "spray-json" % "1.3.4"
+      "io.spray" %% "spray-json" % "1.3.4",
+      "org.scalikejdbc" %% "scalikejdbc" % "3.3.0"
     ),
     libraryDependencies ++= Seq(
+      "com.h2database" % "h2" % "1.4.191" % Test,
       "joda-time" % "joda-time" % "2.9.4" % Test,
       "org.specs2" %% "specs2-core" % specs2 % Test,
       "org.specs2" %% "specs2-junit" % specs2 % Test,
       "org.specs2" %% "specs2-mock" % specs2 % Test
-    )).enablePlugins()
+    )
+  ).enablePlugins()
 
 
 publishTo := {
