@@ -1,10 +1,10 @@
-package drt.export
+package drt.export.zip
 
 import java.io.File
 
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
-import uk.gov.homeoffice.drt.export.ZipFilesInDirectory
+import uk.gov.homeoffice.drt.export.zip.ZipFilesInDirectory
 
 class ZipFilesInDirectorySpec extends Specification {
 

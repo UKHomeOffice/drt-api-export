@@ -1,10 +1,13 @@
-package uk.gov.homeoffice.drt.export
+package uk.gov.homeoffice.drt.export.zip
 
 import java.io.File
 import java.nio.charset.StandardCharsets.UTF_8
 import java.util.zip.ZipFile
+
 import grizzled.slf4j.Logging
 import org.apache.commons.io.IOUtils
+import uk.gov.homeoffice.drt.export.HasConfig
+
 import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
 

@@ -1,4 +1,6 @@
-package uk.gov.homeoffice.drt.export
+package uk.gov.homeoffice.drt.export.zip
+
+import java.time.{Instant, ZoneId, ZonedDateTime}
 
 import org.joda.time.DateTime
 import spray.json.{DefaultJsonProtocol, RootJsonFormat}
@@ -18,6 +20,8 @@ case class VoyageManifest(EventCode: String,
 
   def scheduleArrivalDateTime: Option[DateTime] = Try(DateTime.parse(scheduleDateTimeString)).toOption
 
+  def zonedDateTime = scheduleArrivalDateTime.map(dt=> ZonedDateTime.ofInstant(Instant.ofEpochMilli(dt.getMillis), ZoneId.of(dt.getZone.getID)))
+
   def passengerInfos: Seq[PassengerInfo] = PassengerList.map(_.toPassengerInfo)
 
   def scheduleDateTimeString: String = s"${ScheduledDateOfArrival}T${ScheduledTimeOfArrival}Z"
@@ -27,6 +31,34 @@ case class VoyageManifest(EventCode: String,
   def summary: String = s"$DeparturePortCode->$ArrivalPortCode/$CarrierCode$VoyageNumber@$scheduleDateTimeString"
 
   def key: Int = s"$VoyageNumber-${scheduleArrivalDateTime.map(_.getMillis).getOrElse(0L)}".hashCode
+
+  def toDB: Option[uk.gov.homeoffice.drt.export.db.VoyageManifests] = {
+    zonedDateTime.map { dt =>
+      val passengers = PassengerList.map(pInfo =>
+        uk.gov.homeoffice.drt.export.db.PassengerInfo(
+          voyageManifestsId = 0L,
+          documentType = pInfo.DocumentType,
+          documentIssuingCountryCode = pInfo.DocumentIssuingCountryCode,
+          eeaFlag = pInfo.EEAFlag,
+          age = pInfo.Age,
+          disembarkationPortCountryCode = pInfo.DisembarkationPortCountryCode,
+          nationalityCountryCode = pInfo.NationalityCountryCode,
+          passengerIdentifier = pInfo.PassengerIdentifier,
+          inTransit = pInfo.InTransitFlag != "N"
+        )
+      )
+      uk.gov.homeoffice.drt.export.db.VoyageManifests(
+        id = 0L,
+        eventCode = EventCode,
+        arrivalPortCode = ArrivalPortCode,
+        departurePortCode = DeparturePortCode,
+        voyagerNumber = VoyageNumber,
+        carrierCode = CarrierCode,
+        scheduledDate = dt,
+        passengers = passengers
+      )
+    }
+  }
 }
 
 case class PassengerInfo(DocumentType: Option[String],
