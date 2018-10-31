@@ -17,7 +17,7 @@ trait ZipFilesInDirectory extends Logging with HasConfig {
 
   val directory: String = config.getString("zipDirectory")
 
-  def getFilesInDirectory: List[String] = {
+  def getFilesInDirectory(fileNameOption : Option[String] = None): List[String] = {
     val d = new File(directory)
 
     if (!d.exists && !d.isDirectory) {
@@ -28,7 +28,12 @@ trait ZipFilesInDirectory extends Logging with HasConfig {
       case _ => (-1, -1, -1)
     }).toList
 
-    files.map(_.getName)
+    val fileNames = files.map(_.getName)
+    fileNameOption.map(file => {
+      val index = fileNames.indexOf(file)
+      if (index < 1) List.empty
+      else fileNames.drop(index)
+    }).getOrElse(fileNames)
   }
 
   import scala.collection.JavaConversions._

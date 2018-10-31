@@ -10,13 +10,13 @@ class VoyageManifestsSpec extends Specification {
 
   "VoyageManifests" should {
 
-    "can insert a flight with a passenger" in {
+    "can insert a voyageManifests with a passenger" in {
       val scheduledTime = new DateTime(2017, 11, 2, 3, 30)
       val zonedDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(scheduledTime.getMillis), ZoneId.of(scheduledTime.getZone.getID))
 
-      val database = new Database(className = "org.h2.Driver", url = "jdbc:h2:mem:hello", user = "user", password = "pass")
+      new Database {}
 
-      val tables = new CreateTables()
+      new CreateTables()
 
       val passengers = Seq(
         PassengerInfo(
@@ -31,16 +31,16 @@ class VoyageManifestsSpec extends Specification {
           inTransit = false
         )
       )
-      val flight = VoyageManifests(id = 0L, eventCode = "DC", arrivalPortCode = "JFC", departurePortCode = "GAT", voyagerNumber = "001", carrierCode = "BA",
+      val voyageManifests = VoyageManifests(id = 0L, eventCode = "DC", arrivalPortCode = "JFC", departurePortCode = "GAT", voyagerNumber = "001", carrierCode = "BA",
         scheduledDate = zonedDateTime, passengers)
 
-      val savedFlight = VoyageManifests.insert(flight)
+      val savedVoyageManifests = VoyageManifests.insert(voyageManifests)
 
       val dbFlights = VoyageManifests.flights
 
       dbFlights.size mustEqual 1
 
-      dbFlights.head mustEqual savedFlight
+      dbFlights.head mustEqual savedVoyageManifests
 
     }
   }

@@ -1,26 +1,45 @@
 package uk.gov.homeoffice.drt.export.db
 
 import scalikejdbc.AutoSession
-
 import scalikejdbc._
+import uk.gov.homeoffice.drt.export.HasConfig
 
-class CreateTables {
+class CreateTables extends HasConfig {
+
+  val driver = config.getString("db.driver")
 
   implicit val session = AutoSession
 
   // table creation, you can run DDL by using #execute as same as JDBC
+
+  if (driver == "org.postgresql.Driver")
   sql"""
  create table voyage_manifests (
-   id integer NOT NULL AUTO_INCREMENT,
+   id serial NOT NULL,
    event_code varchar(2) NOT NULL,
    arrival_port_code varchar(5) NOT NULL,
    departure_port_code varchar(5) NOT NULL,
    voyager_number varchar(10) NOT NULL,
    carrier_code varchar(5) NOT NULL,
    scheduled_date timestamp NOT NULL,
-   PRIMARY KEY (event_code, arrival_port_code, departure_port_code, voyager_number,scheduled_date)
+   PRIMARY KEY (event_code, arrival_port_code, departure_port_code, voyager_number,scheduled_date),
+   UNIQUE(id)
  )
 """.execute.apply()
+  else {
+    sql"""
+    create table voyage_manifests (
+      id integer NOT NULL AUTO_INCREMENT,
+      event_code varchar(2) NOT NULL,
+      arrival_port_code varchar(5) NOT NULL,
+      departure_port_code varchar(5) NOT NULL,
+      voyager_number varchar(10) NOT NULL,
+      carrier_code varchar(5) NOT NULL,
+      scheduled_date timestamp NOT NULL,
+      PRIMARY KEY (event_code, arrival_port_code, departure_port_code, voyager_number,scheduled_date)
+    )
+""".execute.apply()
+  }
 
   sql"""
  create table passenger_info (
