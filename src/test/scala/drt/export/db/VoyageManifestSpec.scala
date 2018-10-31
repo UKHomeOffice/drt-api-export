@@ -31,10 +31,10 @@ class VoyageManifestSpec extends Specification {
           inTransit = false
         )
       )
-      val voyageManifests = VoyageManifest(id = 0L, eventCode = "DC", arrivalPortCode = "JFC", departurePortCode = "GAT", voyagerNumber = "001", carrierCode = "BA",
+      val voyageManifest = VoyageManifest(id = 0L, eventCode = "DC", arrivalPortCode = "JFC", departurePortCode = "GAT", voyagerNumber = "001", carrierCode = "BA",
         scheduledDate = zonedDateTime, passengers)
 
-      val savedVoyageManifests = VoyageManifest.insert(voyageManifests)
+      val savedVoyageManifests = VoyageManifest.insert(voyageManifest)
 
       val dbFlights = VoyageManifest.flights
 
