@@ -20,7 +20,7 @@ case class VoyageManifest(EventCode: String,
 
   def scheduleArrivalDateTime: Option[DateTime] = Try(DateTime.parse(scheduleDateTimeString)).toOption
 
-  def zonedDateTime = scheduleArrivalDateTime.map(dt=> ZonedDateTime.ofInstant(Instant.ofEpochMilli(dt.getMillis), ZoneId.of(dt.getZone.getID)))
+  def scheduledTimeOption = scheduleArrivalDateTime.map(dt=> ZonedDateTime.ofInstant(Instant.ofEpochMilli(dt.getMillis), ZoneId.of(dt.getZone.getID)))
 
   def passengerInfos: Seq[PassengerInfo] = PassengerList.map(_.toPassengerInfo)
 
@@ -33,7 +33,7 @@ case class VoyageManifest(EventCode: String,
   def key: Int = s"$VoyageNumber-${scheduleArrivalDateTime.map(_.getMillis).getOrElse(0L)}".hashCode
 
   def toDB: Option[uk.gov.homeoffice.drt.export.db.VoyageManifest] = {
-    zonedDateTime.map { dt =>
+    scheduledTimeOption.map { scheduledTime =>
       val passengers = PassengerList.map(pInfo =>
         uk.gov.homeoffice.drt.export.db.PassengerInfo(
           voyageManifestId = 0L,
@@ -54,7 +54,7 @@ case class VoyageManifest(EventCode: String,
         departurePortCode = DeparturePortCode,
         voyagerNumber = VoyageNumber,
         carrierCode = CarrierCode,
-        scheduledDate = dt,
+        scheduledDate = scheduledTime,
         passengers = passengers
       )
     }

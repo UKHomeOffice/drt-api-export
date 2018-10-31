@@ -18,7 +18,21 @@ object PassengerInfo extends SQLSyntaxSupport[PassengerInfo] {
     new PassengerInfo(rs.get(p.voyageManifestId), rs.get(p.documentType), rs.get(p.documentIssuingCountryCode), rs.get(p.eeaFlag), rs.get(p.age), rs.get(p.disembarkationPortCountryCode), rs.get(p.nationalityCountryCode), rs.get(p.passengerIdentifier), rs.get(p.inTransit))
 
   def insert(passengers: PassengerInfo, voyageManifestId: Long): PassengerInfo = {
-    sql"insert into passenger_info (voyage_manifest_id, document_type, document_issuing_country_code, eea_flag, age, disembarkation_port_country_code, nationality_country_code, passenger_identifier, in_transit) values (${voyageManifestId}, ${passengers.documentType}, ${passengers.documentIssuingCountryCode}, ${passengers.eeaFlag}, ${passengers.age}, ${passengers.disembarkationPortCountryCode}, ${passengers.nationalityCountryCode}, ${passengers.passengerIdentifier}, ${passengers.inTransit})".update.apply()
+    withSQL {
+      val p = PassengerInfo.column
+      insertInto(PassengerInfo).namedValues(
+        p.voyageManifestId -> voyageManifestId,
+        p.documentType -> passengers.documentType,
+        p.documentIssuingCountryCode -> passengers.documentIssuingCountryCode,
+        p.eeaFlag -> passengers.eeaFlag,
+        p.age -> passengers.age,
+        p.disembarkationPortCountryCode -> passengers.disembarkationPortCountryCode,
+        p.nationalityCountryCode -> passengers.nationalityCountryCode,
+        p.passengerIdentifier -> passengers.passengerIdentifier,
+        p.inTransit -> passengers.inTransit
+      )
+
+    }.update().apply()
     passengers.copy(voyageManifestId = voyageManifestId)
   }
 }

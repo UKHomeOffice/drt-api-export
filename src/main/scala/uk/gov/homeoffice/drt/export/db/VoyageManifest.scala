@@ -13,8 +13,19 @@ object VoyageManifest extends SQLSyntaxSupport[VoyageManifest] {
   implicit val session = AutoSession
 
   def insert(voyageManifest: VoyageManifest): VoyageManifest = {
-    val flightsId = sql"insert into voyage_manifest (event_code, arrival_port_code, departure_port_code, voyager_number, carrier_code, scheduled_date ) values (${voyageManifest.eventCode}, ${voyageManifest.arrivalPortCode}, ${voyageManifest.departurePortCode}, ${voyageManifest.voyagerNumber}, ${voyageManifest.carrierCode}, ${voyageManifest.scheduledDate})".updateAndReturnGeneratedKey.apply()
-    voyageManifest.copy(id = flightsId, passengers = voyageManifest.passengers.map(passengers => PassengerInfo.insert(passengers, flightsId)))
+
+    val voyageManifestId = withSQL {
+      val vm = VoyageManifest.column
+      insertInto(VoyageManifest).namedValues(
+        vm.eventCode -> voyageManifest.eventCode,
+        vm.arrivalPortCode -> voyageManifest.arrivalPortCode,
+        vm.departurePortCode -> voyageManifest.departurePortCode,
+        vm.voyagerNumber -> voyageManifest.voyagerNumber,
+        vm.carrierCode -> voyageManifest.carrierCode,
+        vm.scheduledDate -> voyageManifest.scheduledDate
+      )
+    }.updateAndReturnGeneratedKey.apply()
+    voyageManifest.copy(id = voyageManifestId, passengers = voyageManifest.passengers.map(passengers => PassengerInfo.insert(passengers, voyageManifestId)))
   }
 
   def apply(v: SyntaxProvider[VoyageManifest])(rs: WrappedResultSet): VoyageManifest = apply(v.resultName)(rs)
@@ -38,7 +49,7 @@ object VoyageManifest extends SQLSyntaxSupport[VoyageManifest] {
     }
       .one[VoyageManifest](VoyageManifest(v))
       .toMany(PassengerInfo.opt(p))
-      .map { (flights: VoyageManifest, passengersList) => flights.copy(passengers = passengersList) }
+      .map { (voyageManifest: VoyageManifest, passengers) => voyageManifest.copy(passengers = passengers) }
       .list
       .apply()
 }
