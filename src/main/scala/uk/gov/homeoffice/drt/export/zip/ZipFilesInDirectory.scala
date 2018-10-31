@@ -17,6 +17,8 @@ trait ZipFilesInDirectory extends Logging with HasConfig {
 
   val directory: String = config.getString("zipDirectory")
 
+  val allowAllEvents = config.getBoolean("allowAllEvents")
+
   def getFilesInDirectory(fileNameOption : Option[String] = None): List[String] = {
     val d = new File(directory)
 
@@ -58,7 +60,7 @@ trait ZipFilesInDirectory extends Logging with HasConfig {
   def jsonStringToManifest(content: String): Option[VoyageManifest] = {
     parseVoyagePassengerInfo(content) match {
       case Success(m) =>
-        if (m.EventCode == "DC") {
+        if (m.EventCode == "DC" || allowAllEvents) {
           info(s"Using ${m.EventCode} manifest for ${m.ArrivalPortCode} arrival ${m.flightCode}")
           Option(m)
         }

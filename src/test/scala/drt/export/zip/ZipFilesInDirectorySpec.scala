@@ -10,6 +10,7 @@ class ZipFilesInDirectorySpec extends Specification {
 
   trait Context extends Scope with ZipFilesInDirectory {
     override val directory: String = new File("src/test/resources/zippedtest").getCanonicalPath
+    override val allowAllEvents: Boolean = false
   }
 
   "ZipFilesInDirectory" should {
@@ -28,9 +29,15 @@ class ZipFilesInDirectorySpec extends Specification {
       result mustEqual List("drt_dq_160717_165737_5153.zip", "drt_dq_150618_165737_5153.zip")
     }
 
-    "Can unzip a zipped DQ file" in new Context {
+    "Can unzip only zipped DQ files with event 'DC' when allowAllEvents is false" in new Context {
       val result = unzipFile("drt_dq_160617_165737_5153.zip")
       result.size mustEqual 10
+    }
+
+    "Can unzip all zipped DQ files when allowAllEvents is true" in new Context {
+      override val allowAllEvents: Boolean = true
+      val result = unzipFile("drt_dq_160617_165737_5153.zip")
+      result.size mustEqual 59
     }
 
   }
