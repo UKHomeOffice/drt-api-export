@@ -6,11 +6,11 @@ import org.joda.time.DateTime
 import org.specs2.mutable.Specification
 import uk.gov.homeoffice.drt.export.db._
 
-class VoyageManifestsSpec extends Specification {
+class VoyageManifestSpec extends Specification {
 
-  "VoyageManifests" should {
+  "VoyageManifest" should {
 
-    "can insert a voyageManifests with a passenger" in {
+    "can insert a voyageManifest with a passenger" in {
       val scheduledTime = new DateTime(2017, 11, 2, 3, 30)
       val zonedDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(scheduledTime.getMillis), ZoneId.of(scheduledTime.getZone.getID))
 
@@ -20,7 +20,7 @@ class VoyageManifestsSpec extends Specification {
 
       val passengers = Seq(
         PassengerInfo(
-          voyageManifestsId = 0L,
+          voyageManifestId = 0L,
           documentType = Some("P"),
           documentIssuingCountryCode = "USA",
           eeaFlag = "1",
@@ -31,12 +31,12 @@ class VoyageManifestsSpec extends Specification {
           inTransit = false
         )
       )
-      val voyageManifests = VoyageManifests(id = 0L, eventCode = "DC", arrivalPortCode = "JFC", departurePortCode = "GAT", voyagerNumber = "001", carrierCode = "BA",
+      val voyageManifests = VoyageManifest(id = 0L, eventCode = "DC", arrivalPortCode = "JFC", departurePortCode = "GAT", voyagerNumber = "001", carrierCode = "BA",
         scheduledDate = zonedDateTime, passengers)
 
-      val savedVoyageManifests = VoyageManifests.insert(voyageManifests)
+      val savedVoyageManifests = VoyageManifest.insert(voyageManifests)
 
-      val dbFlights = VoyageManifests.flights
+      val dbFlights = VoyageManifest.flights
 
       dbFlights.size mustEqual 1
 

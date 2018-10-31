@@ -2,7 +2,7 @@ package uk.gov.homeoffice.drt
 
 import grizzled.slf4j.Logging
 import uk.gov.homeoffice.drt.export.HasConfig
-import uk.gov.homeoffice.drt.export.db.{CreateTables, Database, VoyageManifests}
+import uk.gov.homeoffice.drt.export.db.{CreateTables, Database, VoyageManifest}
 import uk.gov.homeoffice.drt.export.zip.ZipFilesInDirectory
 
 object Boot extends App with Logging with HasConfig {
@@ -43,7 +43,7 @@ object Boot extends App with Logging with HasConfig {
         val voyageManifests = zipFiles.unzipFile(name)
         info(s"saving to db $name")
         voyageManifests.map(vm =>
-          vm.toDB.map(dbVM => VoyageManifests.insert(dbVM))
+          vm.toDB.map(dbVM => VoyageManifest.insert(dbVM))
         )
       })
 

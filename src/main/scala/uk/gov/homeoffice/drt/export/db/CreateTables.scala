@@ -14,7 +14,7 @@ class CreateTables extends HasConfig {
 
   if (driver == "org.postgresql.Driver")
   sql"""
- create table voyage_manifests (
+ create table voyage_manifest (
    id serial NOT NULL,
    event_code varchar(2) NOT NULL,
    arrival_port_code varchar(5) NOT NULL,
@@ -28,7 +28,7 @@ class CreateTables extends HasConfig {
 """.execute.apply()
   else {
     sql"""
-    create table voyage_manifests (
+    create table voyage_manifest (
       id integer NOT NULL AUTO_INCREMENT,
       event_code varchar(2) NOT NULL,
       arrival_port_code varchar(5) NOT NULL,
@@ -43,7 +43,7 @@ class CreateTables extends HasConfig {
 
   sql"""
  create table passenger_info (
-   voyage_manifests_id integer NOT NULL,
+   voyage_manifest_id integer NOT NULL,
    document_type varchar(5),
    document_issuing_country_code varchar(5) NOT NULL,
    eea_flag varchar(5) NOT NULL,
@@ -54,7 +54,7 @@ class CreateTables extends HasConfig {
    nationality_country_code varchar(5),
    passenger_identifier varchar(5),
    in_transit boolean DEFAULT FALSE NOT NULL,
-   FOREIGN KEY (voyage_manifests_id) REFERENCES voyage_manifests (id)
+   FOREIGN KEY (voyage_manifest_id) REFERENCES voyage_manifest (id)
  )
 """.execute.apply()
 }

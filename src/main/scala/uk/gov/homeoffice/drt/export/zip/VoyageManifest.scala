@@ -32,11 +32,11 @@ case class VoyageManifest(EventCode: String,
 
   def key: Int = s"$VoyageNumber-${scheduleArrivalDateTime.map(_.getMillis).getOrElse(0L)}".hashCode
 
-  def toDB: Option[uk.gov.homeoffice.drt.export.db.VoyageManifests] = {
+  def toDB: Option[uk.gov.homeoffice.drt.export.db.VoyageManifest] = {
     zonedDateTime.map { dt =>
       val passengers = PassengerList.map(pInfo =>
         uk.gov.homeoffice.drt.export.db.PassengerInfo(
-          voyageManifestsId = 0L,
+          voyageManifestId = 0L,
           documentType = pInfo.DocumentType,
           documentIssuingCountryCode = pInfo.DocumentIssuingCountryCode,
           eeaFlag = pInfo.EEAFlag,
@@ -47,7 +47,7 @@ case class VoyageManifest(EventCode: String,
           inTransit = pInfo.InTransitFlag != "N"
         )
       )
-      uk.gov.homeoffice.drt.export.db.VoyageManifests(
+      uk.gov.homeoffice.drt.export.db.VoyageManifest(
         id = 0L,
         eventCode = EventCode,
         arrivalPortCode = ArrivalPortCode,
