@@ -13,7 +13,7 @@ import scala.util.{Failure, Success, Try}
 
 trait ZipFilesInDirectory extends Logging with HasConfig {
 
-  val dqRegex: Regex = "drt_dq_([0-9]{2})([0-9]{2})([0-9]{2})_[0-9]{6}_[0-9]{4}\\.zip".r
+  val dqRegex: Regex = "drt_dq_([0-9]{2})([0-9]{2})([0-9]{2})_([0-9]{6})_([0-9]{4})\\.zip".r
 
   val directory: String = config.getString("zipDirectory")
 
@@ -26,8 +26,8 @@ trait ZipFilesInDirectory extends Logging with HasConfig {
       throw new IllegalArgumentException(s"Directory $directory should exist and be a directory.")
     }
     val files = d.listFiles.filter(f => f.isFile && f.getName.matches(dqRegex.regex)).sortBy(f => f.getName match {
-      case dqRegex(day, month, year) => (year.toInt, month.toInt, day.toInt)
-      case _ => (-1, -1, -1)
+      case dqRegex(year, month, day, second, third) => (year.toInt, month.toInt, day.toInt, second.toInt, third.toInt)
+      case _ => (-1, -1 , -1, -1, -1)
     }).toList
 
     val fileNames = files.map(_.getName)

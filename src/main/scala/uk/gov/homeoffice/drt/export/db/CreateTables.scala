@@ -44,7 +44,7 @@ class CreateTables extends HasConfig {
   sql"""
  create table passenger_info (
    voyage_manifest_id integer NOT NULL,
-   document_type varchar(5),
+   document_type varchar(20),
    document_issuing_country_code varchar(5) NOT NULL,
    eea_flag varchar(5) NOT NULL,
    age varchar(5),
@@ -52,7 +52,7 @@ class CreateTables extends HasConfig {
    in_transit_flag varchar(2),
    disembarkation_port_country_code varchar(5),
    nationality_country_code varchar(5),
-   passenger_identifier varchar(5),
+   passenger_identifier varchar(25),
    in_transit boolean DEFAULT FALSE NOT NULL,
    FOREIGN KEY (voyage_manifest_id) REFERENCES voyage_manifest (id)
  )

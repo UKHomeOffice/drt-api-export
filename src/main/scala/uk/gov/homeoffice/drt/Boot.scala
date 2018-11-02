@@ -1,9 +1,13 @@
 package uk.gov.homeoffice.drt
 
 import grizzled.slf4j.Logging
+import org.postgresql.util.PSQLException
+import scalikejdbc.DB
 import uk.gov.homeoffice.drt.export.HasConfig
 import uk.gov.homeoffice.drt.export.db.{CreateTables, Database, VoyageManifest}
 import uk.gov.homeoffice.drt.export.zip.ZipFilesInDirectory
+
+import scala.util.{Failure, Success, Try}
 
 object Boot extends App with Logging with HasConfig {
   info(s"Starting API Export.")
@@ -39,12 +43,23 @@ object Boot extends App with Logging with HasConfig {
       val allFileNames = zipFiles.getFilesInDirectory(startFileOption)
       info(s"all file names $allFileNames")
       allFileNames.map(name => {
-        info(s"unzipping $name")
-        val voyageManifests = zipFiles.unzipFile(name)
-        info(s"saving to db $name")
-        voyageManifests.map(vm =>
-          vm.toDB.map(dbVM => VoyageManifest.insert(dbVM))
-        )
+        DB localTx { implicit session =>
+          info(s"unzipping $name")
+          val voyageManifests = zipFiles.unzipFile(name)
+          info(s"saving to db $name")
+          voyageManifests.map(vm =>
+            Try {
+              vm.toDB.map(dbVM => VoyageManifest.insert(dbVM))
+            }.recoverWith {
+              case e: PSQLException if e.getMessage.contains("already exists")  =>
+                error(s"continuing as relation exists", e)
+                Success(None)
+              case e =>
+                error(s"not continuing rolling back. ${e.getMessage} ", e)
+                Failure(e)
+            }
+          )
+        }
       })
 
     case _ =>
