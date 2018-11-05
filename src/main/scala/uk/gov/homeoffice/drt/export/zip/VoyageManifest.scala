@@ -1,12 +1,9 @@
 package uk.gov.homeoffice.drt.export.zip
 
 import java.time.{Instant, ZoneId, ZonedDateTime}
-
 import org.joda.time.DateTime
 import spray.json.{DefaultJsonProtocol, RootJsonFormat}
-
 import scala.util.Try
-
 
 case class VoyageManifest(EventCode: String,
                           ArrivalPortCode: String,
@@ -32,32 +29,26 @@ case class VoyageManifest(EventCode: String,
 
   def key: Int = s"$VoyageNumber-${scheduleArrivalDateTime.map(_.getMillis).getOrElse(0L)}".hashCode
 
-  def toDB: Option[uk.gov.homeoffice.drt.export.db.VoyageManifest] = {
+  def toDB: List[uk.gov.homeoffice.drt.export.db.VoyageManifestPassengerInfo] = {
     scheduledTimeOption.map { scheduledTime =>
-      val passengers = PassengerList.map(pInfo =>
-        uk.gov.homeoffice.drt.export.db.PassengerInfo(
-          voyageManifestId = 0L,
-          documentType = pInfo.DocumentType,
-          documentIssuingCountryCode = pInfo.DocumentIssuingCountryCode,
-          eeaFlag = pInfo.EEAFlag,
-          age = pInfo.Age,
-          disembarkationPortCountryCode = pInfo.DisembarkationPortCountryCode,
-          nationalityCountryCode = pInfo.NationalityCountryCode,
-          passengerIdentifier = pInfo.PassengerIdentifier,
-          inTransit = pInfo.InTransitFlag != "N"
-        )
-      )
-      uk.gov.homeoffice.drt.export.db.VoyageManifest(
-        id = 0L,
+      PassengerList.map(pInfo =>
+      uk.gov.homeoffice.drt.export.db.VoyageManifestPassengerInfo(
         eventCode = EventCode,
         arrivalPortCode = ArrivalPortCode,
         departurePortCode = DeparturePortCode,
         voyagerNumber = VoyageNumber,
         carrierCode = CarrierCode,
         scheduledDate = scheduledTime,
-        passengers = passengers
-      )
-    }
+        documentType = pInfo.DocumentType,
+        documentIssuingCountryCode = pInfo.DocumentIssuingCountryCode,
+        eeaFlag = pInfo.EEAFlag,
+        age = pInfo.Age,
+        disembarkationPortCountryCode = pInfo.DisembarkationPortCountryCode,
+        nationalityCountryCode = pInfo.NationalityCountryCode,
+        passengerIdentifier = pInfo.PassengerIdentifier,
+        inTransit = pInfo.InTransitFlag != "N"
+      ))
+    }.getOrElse(List.empty)
   }
 }
 
@@ -79,10 +70,6 @@ case class PassengerInfoJson(DocumentType: Option[String],
     case None => None
   })
 }
-
-
-
-
 
 object FlightPassengerInfoProtocol extends DefaultJsonProtocol {
   implicit val passengerInfoConverter: RootJsonFormat[PassengerInfoJson] = jsonFormat(PassengerInfoJson,

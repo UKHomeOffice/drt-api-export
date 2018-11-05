@@ -1,14 +1,13 @@
 package uk.gov.homeoffice.drt.export.db
 
 import scalikejdbc.{AutoSession, ConnectionPool}
-import scalikejdbc._
 import uk.gov.homeoffice.drt.export.HasConfig
 
 trait Database extends HasConfig {
-  val driver = config.getString("db.driver")
-  val url = config.getString("db.url")
-  val user = config.getString("db.user")
-  val password = config.getString("db.password")
+  lazy val driver = config.getString("db.driver")
+  lazy val url = config.getString("db.url")
+  lazy val user = config.getString("db.user")
+  lazy val password = config.getString("db.password")
 
   // initialize JDBC driver & connection pool
   Class.forName(driver)

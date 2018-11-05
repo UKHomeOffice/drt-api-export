@@ -1,13 +1,11 @@
 package uk.gov.homeoffice.drt
 
 import grizzled.slf4j.Logging
-import org.postgresql.util.PSQLException
 import scalikejdbc.DB
 import uk.gov.homeoffice.drt.export.HasConfig
-import uk.gov.homeoffice.drt.export.db.{CreateTables, Database, VoyageManifest}
+import uk.gov.homeoffice.drt.export.db.{CreateTables, Database, VoyageManifestPassengerInfo}
 import uk.gov.homeoffice.drt.export.zip.ZipFilesInDirectory
-
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Try}
 
 object Boot extends App with Logging with HasConfig {
   info(s"Starting API Export.")
@@ -36,26 +34,30 @@ object Boot extends App with Logging with HasConfig {
   parser.parse(args, ParsedArguments()) match {
     case Some(ParsedArguments(Start, startFileOption, createTables)) =>
       info("starting api export")
-      new Database{}
+      new Database {}
       if (createTables) new CreateTables
 
-      val zipFiles = new ZipFilesInDirectory{}
+      val zipFiles = new ZipFilesInDirectory {}
       val allFileNames = zipFiles.getFilesInDirectory(startFileOption)
       info(s"all file names $allFileNames")
       allFileNames.map(name => {
         DB localTx { implicit session =>
           info(s"unzipping $name")
           val voyageManifests = zipFiles.unzipFile(name)
-          info(s"saving to db $name")
+          info(s"saving $name")
           voyageManifests.map(vm =>
             Try {
-              vm.toDB.map(dbVM => VoyageManifest.insert(dbVM))
+              val voyageManifestPassengerInfoList = vm.toDB
+              voyageManifestPassengerInfoList.headOption.map(vmpi => {
+                if (VoyageManifestPassengerInfo.voyageExist(vmpi)) {
+                  info(s"deleting voyage manifest passenger info ${(vmpi.eventCode, vmpi.voyagerNumber, vmpi.arrivalPortCode, vmpi.departurePortCode, vmpi.scheduledDate)}")
+                  VoyageManifestPassengerInfo.deleteVoyage(vmpi)
+                }
+              })
+              voyageManifestPassengerInfoList.map(dbVM => VoyageManifestPassengerInfo.insert(dbVM))
             }.recoverWith {
-              case e: PSQLException if e.getMessage.contains("already exists")  =>
-                error(s"continuing as relation exists", e)
-                Success(None)
               case e =>
-                error(s"not continuing rolling back. ${e.getMessage} ", e)
+                error(s"rolling back. ${e.getMessage} ", e)
                 Failure(e)
             }
           )
@@ -64,12 +66,13 @@ object Boot extends App with Logging with HasConfig {
 
     case _ =>
       parser.showUsage()
-
   }
-
 }
+
 sealed trait Command
+
 case object ShowUsage extends Command
+
 case object Start extends Command
 
-case class ParsedArguments(command: Command = ShowUsage, startFile: Option[String] = None,createTables: Boolean = false)
+case class ParsedArguments(command: Command = ShowUsage, startFile: Option[String] = None, createTables: Boolean = false)
