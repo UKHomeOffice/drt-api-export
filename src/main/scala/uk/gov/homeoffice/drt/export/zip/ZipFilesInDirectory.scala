@@ -17,18 +17,13 @@ trait ZipFilesInDirectory extends Logging with HasConfig {
 
   val directory: String = config.getString("zipDirectory")
 
-  val allowAllEvents = config.getBoolean("allowAllEvents")
-
   def getFilesInDirectory(fileNameOption : Option[String] = None): List[String] = {
     val d = new File(directory)
 
     if (!d.exists && !d.isDirectory) {
       throw new IllegalArgumentException(s"Directory $directory should exist and be a directory.")
     }
-    val files = d.listFiles.filter(f => f.isFile && f.getName.matches(dqRegex.regex)).sortBy(f => f.getName match {
-      case dqRegex(year, month, day, second, third) => (year.toInt, month.toInt, day.toInt, second.toInt, third.toInt)
-      case _ => (-1, -1 , -1, -1, -1)
-    }).toList
+    val files = d.listFiles.filter(f => f.isFile && f.getName.matches(dqRegex.regex)).sortBy(f => f.getName).toList
 
     val fileNames = files.map(_.getName)
     fileNameOption.map(file => {
@@ -60,11 +55,8 @@ trait ZipFilesInDirectory extends Logging with HasConfig {
   def jsonStringToManifest(content: String): Option[VoyageManifest] = {
     parseVoyagePassengerInfo(content) match {
       case Success(m) =>
-        if (m.EventCode == "DC" || allowAllEvents) {
-          info(s"Using ${m.EventCode} manifest for ${m.ArrivalPortCode} arrival ${m.flightCode}")
-          Option(m)
-        }
-        else None
+        info(s"Using ${m.EventCode} manifest for ${m.ArrivalPortCode} arrival ${m.flightCode}")
+        Option(m)
       case Failure(t) =>
         error(s"Failed to parse voyage manifest json", t)
         None
@@ -76,10 +68,5 @@ trait ZipFilesInDirectory extends Logging with HasConfig {
     import spray.json._
     Try(content.parseJson.convertTo[VoyageManifest])
   }
-
-  def saveToDatabase(voyageManifest: VoyageManifest) = {
-
-  }
-
 
 }
