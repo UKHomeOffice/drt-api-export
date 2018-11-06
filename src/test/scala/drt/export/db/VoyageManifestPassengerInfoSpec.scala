@@ -21,14 +21,7 @@ class VoyageManifestPassengerInfoSpec extends Specification{
 
     implicit val session = AutoSession
 
-    Try {
-      sql"""drop table voyage_manifest_passenger_info CASCADE""".execute.apply()
-      new CreateTables()
-    }.recoverWith {
-      case e: Throwable =>
-        new CreateTables()
-        Success()
-    }
+    new CreateTables()
 
     val voyageManifestPassengerInfo = VoyageManifestPassengerInfo(
       eventCode = "DC", arrivalPortCode = "JFC", departurePortCode = "GAT", voyagerNumber = "001", carrierCode = "BA",
