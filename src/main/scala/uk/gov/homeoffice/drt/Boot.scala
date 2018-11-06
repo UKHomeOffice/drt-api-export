@@ -49,7 +49,7 @@ object Boot extends App with Logging with HasConfig {
             Try {
               val voyageManifestPassengerInfoList = vm.toDB
               voyageManifestPassengerInfoList.headOption.map(vmpi => {
-                if (VoyageManifestPassengerInfo.voyageExist(vmpi)) {
+                if (VoyageManifestPassengerInfo.voyageExistInDatabase(vmpi)) {
                   info(s"deleting voyage manifest passenger info ${(vmpi.eventCode, vmpi.voyagerNumber, vmpi.arrivalPortCode, vmpi.departurePortCode, vmpi.scheduledDate)}")
                   VoyageManifestPassengerInfo.deleteVoyage(vmpi)
                 }

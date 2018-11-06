@@ -54,14 +54,14 @@ class VoyageManifestPassengerInfoSpec extends Specification{
 
       val savedVoyageManifests = VoyageManifestPassengerInfo.insert(voyageManifestPassengerInfo)
 
-      val voyageExists = VoyageManifestPassengerInfo.voyageExist(savedVoyageManifests)
+      val voyageExists = VoyageManifestPassengerInfo.voyageExistInDatabase(savedVoyageManifests)
 
       voyageExists must beTrue
     }
 
     "voyageExist is false when the manifests doesn't exist" in new Context {
 
-      val voyageExists = VoyageManifestPassengerInfo.voyageExist(voyageManifestPassengerInfo.copy(eventCode = "CI"))
+      val voyageExists = VoyageManifestPassengerInfo.voyageExistInDatabase(voyageManifestPassengerInfo.copy(eventCode = "CI"))
 
       voyageExists must beFalse
     }
@@ -74,7 +74,7 @@ class VoyageManifestPassengerInfoSpec extends Specification{
 
       VoyageManifestPassengerInfo.deleteVoyage(savedVoyageManifests1)
 
-      val voyageExists = VoyageManifestPassengerInfo.voyageExist(savedVoyageManifests1)
+      val voyageExists = VoyageManifestPassengerInfo.voyageExistInDatabase(savedVoyageManifests1)
       voyageExists must beFalse
 
       val dbFlights = VoyageManifestPassengerInfo.flights
@@ -87,7 +87,7 @@ class VoyageManifestPassengerInfoSpec extends Specification{
       VoyageManifestPassengerInfo.deleteVoyage(savedVoyageManifests.copy(arrivalPortCode = "BHX"))
 
 
-      val voyageExists = VoyageManifestPassengerInfo.voyageExist(savedVoyageManifests)
+      val voyageExists = VoyageManifestPassengerInfo.voyageExistInDatabase(savedVoyageManifests)
       voyageExists must beTrue
 
       val dbFlights = VoyageManifestPassengerInfo.flights

@@ -65,7 +65,7 @@ object VoyageManifestPassengerInfo extends SQLSyntaxSupport[VoyageManifestPassen
       .list
       .apply()
 
-  def voyageExist(vmpi: VoyageManifestPassengerInfo): Boolean =
+  def voyageExistInDatabase(vmpi: VoyageManifestPassengerInfo): Boolean =
     withSQL {
       select(count).from(VoyageManifestPassengerInfo as vm).where
         .eq(vm.eventCode, vmpi.eventCode)
