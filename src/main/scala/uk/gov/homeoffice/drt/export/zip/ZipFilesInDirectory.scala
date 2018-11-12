@@ -11,13 +11,13 @@ import uk.gov.homeoffice.drt.export.HasConfig
 import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
 
-trait ZipFilesInDirectory extends Logging with HasConfig {
+case class ZipFilesInDirectory(directory: String) extends Logging with HasConfig {
 
   val dqRegex: Regex = "drt_dq_([0-9]{2})([0-9]{2})([0-9]{2})_([0-9]{6})_([0-9]{4})\\.zip".r
 
-  val directory: String = config.getString("zipDirectory")
+  import scala.collection.JavaConversions._
 
-  def getFilesInDirectory(fileNameOption : Option[String] = None): List[String] = {
+  def filesInDirectory(fileNameOption : Option[String] = None): List[String] = {
     val d = new File(directory)
 
     if (!d.exists && !d.isDirectory) {
@@ -32,8 +32,6 @@ trait ZipFilesInDirectory extends Logging with HasConfig {
       else fileNames.drop(index)
     }).getOrElse(fileNames)
   }
-
-  import scala.collection.JavaConversions._
 
   def unzipFile(name: String): List[VoyageManifest] = {
 
