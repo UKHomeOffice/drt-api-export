@@ -2,7 +2,6 @@ package uk.gov.homeoffice.drt.export.db
 
 import grizzled.slf4j.Logging
 import scalikejdbc.interpolation.SQLSyntax.count
-//import scalikejdbc.{AutoSession, insertInto, select}
 import scalikejdbc._
 
 
