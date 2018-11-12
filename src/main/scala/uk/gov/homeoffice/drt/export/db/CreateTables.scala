@@ -34,4 +34,10 @@ class CreateTables {
   sql"""
       create index idx_voyage_manifest ON voyage_manifest_passenger_info(event_code, arrival_port_code, departure_port_code, voyager_number, scheduled_date)
     """.execute().apply()
+
+  sql"""
+      create table processed_zips (
+        name varchar(35) NOT NULL PRIMARY KEY
+      )
+    """.execute().apply()
 }

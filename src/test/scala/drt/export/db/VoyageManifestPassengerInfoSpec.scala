@@ -41,20 +41,20 @@ class VoyageManifestPassengerInfoSpec extends Specification{
 
     "can insert a voyageManifest with a passenger" in new Context {
 
-      val savedVoyageManifests = VoyageManifestPassengerInfo.insert(voyageManifestPassengerInfo)
+      VoyageManifestPassengerInfo.insert(voyageManifestPassengerInfo)
 
       val dbFlights = VoyageManifestPassengerInfo.flights
 
       dbFlights.size mustEqual 1
 
-      dbFlights.head mustEqual savedVoyageManifests
+      dbFlights.head mustEqual voyageManifestPassengerInfo
     }
 
     "voyageExist is true when the manifests exists" in new Context {
 
-      val savedVoyageManifests = VoyageManifestPassengerInfo.insert(voyageManifestPassengerInfo)
+      VoyageManifestPassengerInfo.insert(voyageManifestPassengerInfo)
 
-      val voyageExists = VoyageManifestPassengerInfo.voyageExistInDatabase(savedVoyageManifests)
+      val voyageExists = VoyageManifestPassengerInfo.voyageExistInDatabase(voyageManifestPassengerInfo)
 
       voyageExists must beTrue
     }
@@ -67,12 +67,15 @@ class VoyageManifestPassengerInfoSpec extends Specification{
     }
 
     "can delete an existing voyage passenger info" in new Context {
-      val savedVoyageManifests1 = VoyageManifestPassengerInfo.insert(voyageManifestPassengerInfo)
-      val savedVoyageManifests2 = VoyageManifestPassengerInfo.insert(voyageManifestPassengerInfo.copy(passengerIdentifier = Some("2")))
-      val savedVoyageManifests3 = VoyageManifestPassengerInfo.insert(voyageManifestPassengerInfo.copy(passengerIdentifier = Some("3")))
+      val savedVoyageManifests1 = voyageManifestPassengerInfo
+      VoyageManifestPassengerInfo.insert(voyageManifestPassengerInfo)
+      val savedVoyageManifests2 = voyageManifestPassengerInfo.copy(passengerIdentifier = Some("2"))
+      VoyageManifestPassengerInfo.insert(savedVoyageManifests2)
+      val savedVoyageManifests3 = voyageManifestPassengerInfo.copy(passengerIdentifier = Some("3"))
+      VoyageManifestPassengerInfo.insert(savedVoyageManifests3)
 
 
-      VoyageManifestPassengerInfo.deleteVoyage(savedVoyageManifests1)
+      VoyageManifestPassengerInfo.deleteVoyage(voyageManifestPassengerInfo)
 
       val voyageExists = VoyageManifestPassengerInfo.voyageExistInDatabase(savedVoyageManifests1)
       voyageExists must beFalse
@@ -82,12 +85,12 @@ class VoyageManifestPassengerInfoSpec extends Specification{
     }
 
     "will not delete an existing voyage with a different arrivalPortCode" in new Context {
-      val savedVoyageManifests = VoyageManifestPassengerInfo.insert(voyageManifestPassengerInfo)
+      VoyageManifestPassengerInfo.insert(voyageManifestPassengerInfo)
 
-      VoyageManifestPassengerInfo.deleteVoyage(savedVoyageManifests.copy(arrivalPortCode = "BHX"))
+      VoyageManifestPassengerInfo.deleteVoyage(voyageManifestPassengerInfo.copy(arrivalPortCode = "BHX"))
 
 
-      val voyageExists = VoyageManifestPassengerInfo.voyageExistInDatabase(savedVoyageManifests)
+      val voyageExists = VoyageManifestPassengerInfo.voyageExistInDatabase(voyageManifestPassengerInfo)
       voyageExists must beTrue
 
       val dbFlights = VoyageManifestPassengerInfo.flights
