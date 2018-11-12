@@ -6,25 +6,6 @@ import grizzled.slf4j.Logging
 import scalikejdbc._
 import sqls.count
 
-case class ProcessedZip(name: String)
-
-object ProcessedZip extends SQLSyntaxSupport[ProcessedZip] with Logging {
-  override val tableName = "processed_zips"
-
-  implicit val session: AutoSession.type = AutoSession
-
-  val pz = ProcessedZip.syntax
-
-  def insert(processedZip: ProcessedZip): Int = withSQL {
-    val row = ProcessedZip.column
-    insertInto(ProcessedZip).namedValues(row.name -> processedZip.name)
-  }.update.apply()
-
-  def processed(processedZip: ProcessedZip): Boolean = withSQL {
-    select(count).from(ProcessedZip as pz).where
-      .eq(pz.name, processedZip.name)
-  }.map(x => x.int(1)).single.apply() != Option(0)
-}
 
 case class VoyageManifestPassengerInfo(eventCode: String, arrivalPortCode: String, departurePortCode: String, voyagerNumber: String, carrierCode: String, scheduledDate: ZonedDateTime, documentType: Option[String], documentIssuingCountryCode: String, eeaFlag: String, age: Option[String], disembarkationPortCountryCode: Option[String], nationalityCountryCode: Option[String], passengerIdentifier: Option[String], inTransit: Boolean)
 
@@ -32,6 +13,8 @@ object VoyageManifestPassengerInfo extends SQLSyntaxSupport[VoyageManifestPassen
   override val tableName = "voyage_manifest_passenger_info"
 
   implicit val session: AutoSession.type = AutoSession
+
+  val vm = VoyageManifestPassengerInfo.syntax
 
   def insert(voyageManifestPassengerInfo: VoyageManifestPassengerInfo): Int = withSQL {
     val vm = VoyageManifestPassengerInfo.column
@@ -53,6 +36,26 @@ object VoyageManifestPassengerInfo extends SQLSyntaxSupport[VoyageManifestPassen
     )
   }.update.apply()
 
+  def batchInsert(batchPaxInfos: Seq[Seq[Any]]) = withSQL {
+    val vm = VoyageManifestPassengerInfo.column
+    insertInto(VoyageManifestPassengerInfo).namedValues(
+      vm.eventCode -> sqls.?,
+      vm.arrivalPortCode -> sqls.?,
+      vm.departurePortCode -> sqls.?,
+      vm.voyagerNumber -> sqls.?,
+      vm.carrierCode -> sqls.?,
+      vm.scheduledDate -> sqls.?,
+      vm.documentType -> sqls.?,
+      vm.documentIssuingCountryCode -> sqls.?,
+      vm.eeaFlag -> sqls.?,
+      vm.age -> sqls.?,
+      vm.disembarkationPortCountryCode -> sqls.?,
+      vm.nationalityCountryCode -> sqls.?,
+      vm.passengerIdentifier -> sqls.?,
+      vm.inTransit -> sqls.?
+    )
+  }.batch(batchPaxInfos: _*).apply()
+
   def apply(v: SyntaxProvider[VoyageManifestPassengerInfo])(rs: WrappedResultSet): VoyageManifestPassengerInfo = apply(v.resultName)(rs)
 
   def apply(v: ResultName[VoyageManifestPassengerInfo])(rs: WrappedResultSet): VoyageManifestPassengerInfo =
@@ -71,8 +74,6 @@ object VoyageManifestPassengerInfo extends SQLSyntaxSupport[VoyageManifestPassen
       passengerIdentifier = rs.get(v.passengerIdentifier),
       inTransit = rs.get(v.inTransit)
     )
-
-  val vm = VoyageManifestPassengerInfo.syntax
 
   def flights: Seq[VoyageManifestPassengerInfo] =
     withSQL {

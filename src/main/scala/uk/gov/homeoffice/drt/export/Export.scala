@@ -49,42 +49,66 @@ object Export extends Logging with HasConfig {
     val allFileNames = zipFiles.filesInDirectory(startFileOption).sorted
     info(s"${allFileNames.length} zips. Earliest: ${allFileNames.head}. Latest: ${allFileNames.takeRight(1).head}")
 
-    allFileNames.foldLeft(ExportProgress(allFileNames.length, DateTime.now(), 0, 0, 0)) {
+    exportZipFiles(zipFiles, allFileNames)
+  }
+
+  def exportZipFiles(zipFiles: ZipFilesInDirectory, allFileNames: List[String]): ExportProgress = allFileNames
+    .foldLeft(ExportProgress(allFileNames.length, DateTime.now(), 0, 0, 0)) {
       case (progress, zipFileName) =>
         val toProcess = ProcessedZip(zipFileName)
         if (!ProcessedZip.processed(toProcess)) {
-
-          val voyageManifests: List[VoyageManifest] = zipFiles.unzipFile(zipFileName)
-          val paxCount = voyageManifests.map(_.PassengerList.length).sum
-
-          val manifestCount = voyageManifests.length
+          val voyageManifests = zipFiles.unzipFile(zipFileName)
           exportManifests(voyageManifests)
-
           ProcessedZip.insert(toProcess)
-          val updatedProgress = progress.copy(zips = progress.zips + 1, manifests = progress.manifests + manifestCount, passengers = progress.passengers + paxCount)
-
-          info(s"Progress: $updatedProgress")
-
-          updatedProgress
+          updateProgressAndLog(voyageManifests, progress)
         } else {
           info(s"Already processed $zipFileName. Skipping")
           progress.copy(totalZips = progress.totalZips - 1)
         }
     }
+
+  def updateProgressAndLog(voyageManifests: List[VoyageManifest], progress: ExportProgress): ExportProgress = {
+    val paxCount = voyageManifests.map(_.PassengerList.length).sum
+    val manifestCount = voyageManifests.length
+    val updatedProgress = progress.copy(zips = progress.zips + 1, manifests = progress.manifests + manifestCount, passengers = progress.passengers + paxCount)
+
+    info(s"Progress: $updatedProgress")
+
+    updatedProgress
   }
 
-  def exportManifests(voyageManifests: List[VoyageManifest]): Unit = voyageManifests.foreach(exportManifest)
-
-  def exportManifest(vm: VoyageManifest): Unit = {
+  def exportManifests(voyageManifests: List[VoyageManifest]): Unit = {
+    val fileBatch = voyageManifests.flatMap(exportManifest)
     Try {
-      val voyageManifestPassengerInfoList = vm.toDB
-      removeAnyExistingEntries(voyageManifestPassengerInfoList)
-      voyageManifestPassengerInfoList.map(dbVM => VoyageManifestPassengerInfo.insert(dbVM))
+      VoyageManifestPassengerInfo.batchInsert(fileBatch)
     }.recoverWith {
       case e =>
         error(s"rolling back. ${e.getMessage} ", e)
         Failure(e)
     }
+  }
+
+  def exportManifest(vm: VoyageManifest): Seq[Seq[Any]] = {
+    val voyageManifestPassengerInfoList = vm.toDB
+
+    removeAnyExistingEntries(voyageManifestPassengerInfoList)
+
+    voyageManifestPassengerInfoList.map(p => Seq(
+      p.eventCode,
+      p.arrivalPortCode,
+      p.departurePortCode,
+      p.voyagerNumber,
+      p.carrierCode,
+      p.scheduledDate,
+      p.documentType,
+      p.documentIssuingCountryCode,
+      p.eeaFlag,
+      p.age,
+      p.disembarkationPortCountryCode,
+      p.nationalityCountryCode,
+      p.passengerIdentifier,
+      p.inTransit
+    ))
   }
 
   def removeAnyExistingEntries(voyageManifestPassengerInfoList: List[VoyageManifestPassengerInfo]): Unit = voyageManifestPassengerInfoList
