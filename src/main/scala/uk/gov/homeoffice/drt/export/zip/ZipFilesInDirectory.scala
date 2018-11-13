@@ -52,9 +52,7 @@ case class ZipFilesInDirectory(directory: String) extends Logging with HasConfig
 
   def jsonStringToManifest(content: String): Option[VoyageManifest] = {
     parseVoyagePassengerInfo(content) match {
-      case Success(m) =>
-//        info(s"Using ${m.EventCode} manifest for ${m.ArrivalPortCode} arrival ${m.flightCode}")
-        Option(m)
+      case Success(m) => Option(m)
       case Failure(t) =>
         error(s"Failed to parse voyage manifest json", t)
         None
