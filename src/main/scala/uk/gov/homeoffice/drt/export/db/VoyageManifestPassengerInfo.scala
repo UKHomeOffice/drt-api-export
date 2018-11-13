@@ -16,26 +16,6 @@ object VoyageManifestPassengerInfo extends SQLSyntaxSupport[VoyageManifestPassen
 
   val vm = VoyageManifestPassengerInfo.syntax
 
-  def insert(voyageManifestPassengerInfo: VoyageManifestPassengerInfo): Int = withSQL {
-    val vm = VoyageManifestPassengerInfo.column
-    insertInto(VoyageManifestPassengerInfo).namedValues(
-      vm.eventCode -> voyageManifestPassengerInfo.eventCode,
-      vm.arrivalPortCode -> voyageManifestPassengerInfo.arrivalPortCode,
-      vm.departurePortCode -> voyageManifestPassengerInfo.departurePortCode,
-      vm.voyagerNumber -> voyageManifestPassengerInfo.voyagerNumber,
-      vm.carrierCode -> voyageManifestPassengerInfo.carrierCode,
-      vm.scheduledDate -> voyageManifestPassengerInfo.scheduledDate,
-      vm.documentType -> voyageManifestPassengerInfo.documentType,
-      vm.documentIssuingCountryCode -> voyageManifestPassengerInfo.documentIssuingCountryCode,
-      vm.eeaFlag -> voyageManifestPassengerInfo.eeaFlag,
-      vm.age -> voyageManifestPassengerInfo.age,
-      vm.disembarkationPortCountryCode -> voyageManifestPassengerInfo.disembarkationPortCountryCode,
-      vm.nationalityCountryCode -> voyageManifestPassengerInfo.nationalityCountryCode,
-      vm.passengerIdentifier -> voyageManifestPassengerInfo.passengerIdentifier,
-      vm.inTransit -> voyageManifestPassengerInfo.inTransit
-    )
-  }.update.apply()
-
   def batchInsert(batchPaxInfos: Seq[Seq[Any]]) = withSQL {
     val vm = VoyageManifestPassengerInfo.column
     insertInto(VoyageManifestPassengerInfo).namedValues(

@@ -78,7 +78,11 @@ object Export extends Logging with HasConfig {
   }
 
   def exportManifests(voyageManifests: List[VoyageManifest]): Unit = {
-    val fileBatch = voyageManifests.flatMap(exportManifest)
+    val fileBatch = voyageManifests.flatMap(vm => {
+      val passengers = vm.toDB
+      removeAnyExistingEntries(passengers)
+      toBatch(passengers)
+    })
     Try {
       VoyageManifestPassengerInfo.batchInsert(fileBatch)
     }.recoverWith {
@@ -88,12 +92,8 @@ object Export extends Logging with HasConfig {
     }
   }
 
-  def exportManifest(vm: VoyageManifest): Seq[Seq[Any]] = {
-    val voyageManifestPassengerInfoList = vm.toDB
-
-    removeAnyExistingEntries(voyageManifestPassengerInfoList)
-
-    voyageManifestPassengerInfoList.map(p => Seq(
+  def toBatch(passengers: List[VoyageManifestPassengerInfo]): Seq[Seq[Any]] = {
+    passengers.map(p => Seq(
       p.eventCode,
       p.arrivalPortCode,
       p.departurePortCode,

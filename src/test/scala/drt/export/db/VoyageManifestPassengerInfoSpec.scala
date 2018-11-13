@@ -1,11 +1,14 @@
 package drt.export.db
 
 import java.time.{Instant, ZoneId, ZonedDateTime}
+
 import org.joda.time.DateTime
 import org.specs2.matcher.Scope
 import org.specs2.mutable.Specification
 import scalikejdbc._
+import uk.gov.homeoffice.drt.Export
 import uk.gov.homeoffice.drt.export.db._
+
 import scala.util.{Success, Try}
 
 class VoyageManifestPassengerInfoSpec extends Specification{
@@ -41,7 +44,7 @@ class VoyageManifestPassengerInfoSpec extends Specification{
 
     "can insert a voyageManifest with a passenger" in new Context {
 
-      VoyageManifestPassengerInfo.insert(voyageManifestPassengerInfo)
+      VoyageManifestPassengerInfo.batchInsert(Export.toBatch(List(voyageManifestPassengerInfo)))
 
       val dbFlights = VoyageManifestPassengerInfo.flights
 
@@ -52,7 +55,7 @@ class VoyageManifestPassengerInfoSpec extends Specification{
 
     "voyageExist is true when the manifests exists" in new Context {
 
-      VoyageManifestPassengerInfo.insert(voyageManifestPassengerInfo)
+      VoyageManifestPassengerInfo.batchInsert(Export.toBatch(List(voyageManifestPassengerInfo)))
 
       val voyageExists = VoyageManifestPassengerInfo.voyageExistInDatabase(voyageManifestPassengerInfo)
 
@@ -68,11 +71,11 @@ class VoyageManifestPassengerInfoSpec extends Specification{
 
     "can delete an existing voyage passenger info" in new Context {
       val savedVoyageManifests1 = voyageManifestPassengerInfo
-      VoyageManifestPassengerInfo.insert(voyageManifestPassengerInfo)
+      VoyageManifestPassengerInfo.voyageExistInDatabase(savedVoyageManifests1)
       val savedVoyageManifests2 = voyageManifestPassengerInfo.copy(passengerIdentifier = Some("2"))
-      VoyageManifestPassengerInfo.insert(savedVoyageManifests2)
+      VoyageManifestPassengerInfo.voyageExistInDatabase(savedVoyageManifests2)
       val savedVoyageManifests3 = voyageManifestPassengerInfo.copy(passengerIdentifier = Some("3"))
-      VoyageManifestPassengerInfo.insert(savedVoyageManifests3)
+      VoyageManifestPassengerInfo.voyageExistInDatabase(savedVoyageManifests3)
 
 
       VoyageManifestPassengerInfo.deleteVoyage(voyageManifestPassengerInfo)
@@ -85,7 +88,7 @@ class VoyageManifestPassengerInfoSpec extends Specification{
     }
 
     "will not delete an existing voyage with a different arrivalPortCode" in new Context {
-      VoyageManifestPassengerInfo.insert(voyageManifestPassengerInfo)
+      VoyageManifestPassengerInfo.batchInsert(Export.toBatch(List(voyageManifestPassengerInfo)))
 
       VoyageManifestPassengerInfo.deleteVoyage(voyageManifestPassengerInfo.copy(arrivalPortCode = "BHX"))
 
